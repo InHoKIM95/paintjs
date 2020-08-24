@@ -67,29 +67,53 @@ function handleSaveClick(){
 
 
     var data = imgData.data;
-    console.log(data);
-    
-    var rgbData = new Array();
-    var rgb = new Array();
+
+    for(var i = 0 ; i < data.length ; i++){
+        if(data[i] != 255){
+            console.log(i);
+        }
+    }
+
+    var a1 = new Array();
+    var a2 = new Array();
     var cnt = 1;
     for(var i = 0 ; i < data.length ; i++){
         if(i%4==0){
-            rgb[0] = data[i];
+            a2[0] = data[i];
         }else if(i%4==1){
-            rgb[1] = data[i];
+            a2[1] = data[i];
             cnt++;
         }else if(i%4==2){
-            rgb[2] = data[i];
+            a2[2] = data[i];
             cnt++;
         }else{
-            rgb[3] = data[i];
+            a2[3] = data[i];
             cnt++;
         }
         if(cnt==4){
-            rgbData.push(rgb);
+            a1.push(a2);
             cnt = 1;
         }
     }
+
+    var rgbData = Array.from(Array(canvas.width),() => new Array(canvas.height));
+
+    var count = 0;
+    for(var i = 0; i < rgbData.length ; i++){
+        for(var j = 0; j < rgbData[i].length ; j++){
+            rgbData[i][j] = a1[count];
+            count++;
+        }
+    }
+
+    for(var i = 0; i < rgbData.length; i++){
+        for(var j = 0 ; j < rgbData[i].length ; j++){
+            if(rgbData[i][j][0] != 255){
+                console.log(i,j);
+            }
+        }
+    }
+
     console.log(rgbData);
 
 
@@ -117,7 +141,6 @@ function handleSaveClick(){
     // link.download = "PaintJS!";
     // link.click();
 }
-
 
 if(canvas){
     canvas.addEventListener("mousemove", onMouseMove);
