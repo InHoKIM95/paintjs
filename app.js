@@ -10,7 +10,7 @@ canvas.height = 700;
 
 ctx.fillStyle = "white";
 ctx.fillRect(0,0, canvas.width, canvas.height);
-ctx.strokeStyle = "#2c2c2c";
+ctx.strokeStyle = "black";
 ctx.lineWidth = 15;
 
 let painting = false;
@@ -46,7 +46,7 @@ function handleColorClick(event){
 
 function handleRangeChange(event){
     const size = event.target.value;
-    console.log(size);
+    console.log("pensize : ",size);
     ctx.lineWidth = size;
 }
 
@@ -61,12 +61,63 @@ function handleCM(event){
 }
 
 function handleSaveClick(){
-    const image = canvas.toDataURL();
-    const link = document.createElement("a");
-    link.href = image;
-    link.download = "PaintJS!";
-    link.click();
+    const dataURL = canvas.toDataURL();
+
+    var imgData = ctx.getImageData(0,0,canvas.width,canvas.height);
+
+
+    var data = imgData.data;
+    console.log(data);
+    
+    var rgbData = new Array();
+    var rgb = new Array();
+    var cnt = 1;
+    for(var i = 0 ; i < data.length ; i++){
+        if(i%4==0){
+            rgb[0] = data[i];
+        }else if(i%4==1){
+            rgb[1] = data[i];
+            cnt++;
+        }else if(i%4==2){
+            rgb[2] = data[i];
+            cnt++;
+        }else{
+            rgb[3] = data[i];
+            cnt++;
+        }
+        if(cnt==4){
+            rgbData.push(rgb);
+            cnt = 1;
+        }
+    }
+    console.log(rgbData);
+
+
+
+    // var imgData = ctx.getImageData(0,0,canvas.width, canvas.height);
+    // console.log(imgData);
+    // ctx.putImageData(imgData,10,70);
+
+    // $.ajax({
+    //     type:'post',
+    //     url:'image.php',
+    //     data: {'imgBase64' : dataURL},
+    //     success: function(){
+    //         console.log('성공');
+    //     },
+    //     error: function(){
+    //         alert('실패');
+    //     }
+    // });
+
+
+    // a태그 생성해서 다운로드 받는것
+    // const link = document.createElement("a");
+    // link.href = image;
+    // link.download = "PaintJS!";
+    // link.click();
 }
+
 
 if(canvas){
     canvas.addEventListener("mousemove", onMouseMove);
