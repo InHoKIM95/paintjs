@@ -97,6 +97,13 @@ function handleSaveClick() {
     var crop_rgbData = CropImage(xmin,xmax,ymin,ymax);
     console.log("crop_rgbData : ",crop_rgbData);
 
+    $.ajax({
+        type:"post",
+        url:"image.php/hi",
+        data:{'data':"yo!"},
+        success:alert("성공")
+    });
+
 }
 
 //arrray형태로 rgb값을 x,y 좌표별 만드는 function
