@@ -60,13 +60,48 @@ function handleCM(event) {
     event.preventDefault();
 }
 
+//분석 버튼 클릭시 function
 function handleSaveClick() {
     var dataURL = canvas.toDataURL();
     var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     var data = imgData.data;
 
     //임시 보관용 배열생성
-    var a1 = new Array(canvas.width * canvas.height);
+    var rgbData = createArrayData(canvas.width,canvas.height,data);
+
+    var xmin = canvas.width-1;
+    var xmax = 0;
+    var ymin = canvas.height-1;
+    var ymax = 0;
+
+    for (var i = 0; i < rgbData.length; i++) {
+        for (var j = 0; j < rgbData[i].length; j++) {
+            if(rgbData[i][j][0]!=255){
+                if(j < xmin){
+                    xmin = j;
+                }
+                if(j > xmax){
+                    xmax = j;
+                }
+                if(i < ymin){
+                    ymin = i;
+                }
+                if(i > ymax){
+                    ymax = i;
+                }
+            }
+        }
+    }
+    console.log("canvas x,y 최소 최대좌표 : ",xmin,xmax,ymin,ymax);
+
+    var crop_rgbData = CropImage(xmin,xmax,ymin,ymax);
+    console.log("crop_rgbData : ",crop_rgbData);
+
+}
+
+//arrray형태로 rgb값을 x,y 좌표별 만드는 function
+function createArrayData(width,height,data){
+    var a1 = new Array(width * height);
     var a2 = new Array(4);
 
     var cnt = 0;
@@ -95,8 +130,7 @@ function handleSaveClick() {
         }
     }
 
-    //RGB값 최종 보관용 배열 생성
-    var rgbData = Array.from(Array(canvas.width), () => new Array(canvas.height));
+    var rgbData = Array.from(Array(width), () => new Array(height));
 
     var count = 0;
     for (var i = 0; i < rgbData.length; i++) {
@@ -106,53 +140,31 @@ function handleSaveClick() {
         }
     }
 
-    var xmin = canvas.width-1;
-    var xmax = 0;
-    var ymin = canvas.height-1;
-    var ymax = 0;
-
-    for (var i = 0; i < rgbData.length; i++) {
-        for (var j = 0; j < rgbData[i].length; j++) {
-            if(rgbData[i][j][0]!=255){
-                if(j < xmin){
-                    xmin = j;
-                }
-                if(j > xmax){
-                    xmax = j;
-                }
-                if(i < ymin){
-                    ymin = i;
-                }
-                if(i > ymax){
-                    ymax = i;
-                }
-            }
-        }
-    }
-    console.log(xmin,xmax,ymin,ymax);
-
-    CropImage(xmin,xmax,ymin,ymax);
-
-    // a태그 생성해서 다운로드 받는것
-    // const link = document.createElement("a");
-    // link.href = image;
-    // link.download = "PaintJS!";
-    // link.click();
+    return rgbData;
 }
 
+//rgb data에 따라 이미지를 잘라서 캔버스에 넣는 function
 function CropImage(xmin,xmax,ymin,ymax){
     var crop_canvas = document.getElementById("cropCanvas");
-    crop_canvas.style.visibility = "visible";
     var width = (xmax+1)-xmin;
     var height = (ymax+1)-ymin;
     var crop_ctx = crop_canvas.getContext("2d");
 
-    crop_ctx.drawImage(ctx,
+    console.log("crop_cavas left, top, width, height : ",xmin,ymin,width,height);
+
+    crop_ctx.drawImage(canvas,
         xmin, ymin,
         width, height,
         0, 0,
         width, height
     );
+
+    var crop_imgData = crop_ctx.getImageData(0, 0, width, height);
+    var crop_data = crop_imgData.data;
+
+    var rgbData = createArrayData(width,height,crop_data);
+
+    return rgbData;
 }
 
 if (canvas) {
