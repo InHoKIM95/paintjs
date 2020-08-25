@@ -61,18 +61,19 @@ function handleCM(event) {
 }
 
 function handleSaveClick() {
-    const dataURL = canvas.toDataURL();
-
+    var dataURL = canvas.toDataURL();
     var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-
     var data = imgData.data;
 
+    //임시 보관용 배열생성
     var a1 = new Array(canvas.width * canvas.height);
     var a2 = new Array(4);
+
     var cnt = 0;
-    var arraycount = 0;
+    var arrcnt = 0;
+
     for (var i = 0; i < data.length; i++) {
+        
         if (i % 4 == 0) {
             a2[0] = data[i];
             cnt++;
@@ -87,25 +88,14 @@ function handleSaveClick() {
             cnt++;
         }
         if (cnt == 4) {
-            a1[arraycount] = a2;
-            arraycount++;
+            a1[arrcnt] = a2;
+            arrcnt++;
             cnt = 0;
+            a2 = new Array(4);
         }
     }
-    //test ------------------
-    for(var i = 0 ; i < 100 ; i++){
-        console.log(a1[i][0]);
-    }
 
-    // var whitecount = 0;
-    // for (var i = 0; i < a1.length; i++) {
-    //     if (a1[i][0] == 255) {
-    //         whitecount++
-    //     }
-    // }
-    // console.log(whitecount);
-
-
+    //RGB값 최종 보관용 배열 생성
     var rgbData = Array.from(Array(canvas.width), () => new Array(canvas.height));
 
     var count = 0;
@@ -115,22 +105,54 @@ function handleSaveClick() {
             count++;
         }
     }
-    // console.log(rgbData[0][0][0]);
-    // console.log(rgbData[0][300][0]);
-    // console.log(rgbData[0][400][0]);
-    // console.log(rgbData[0][500][0]);
 
+    var xmin = canvas.width-1;
+    var xmax = 0;
+    var ymin = canvas.height-1;
+    var ymax = 0;
 
+    for (var i = 0; i < rgbData.length; i++) {
+        for (var j = 0; j < rgbData[i].length; j++) {
+            if(rgbData[i][j][0]!=255){
+                if(j < xmin){
+                    xmin = j;
+                }
+                if(j > xmax){
+                    xmax = j;
+                }
+                if(i < ymin){
+                    ymin = i;
+                }
+                if(i > ymax){
+                    ymax = i;
+                }
+            }
+        }
+    }
+    console.log(xmin,xmax,ymin,ymax);
 
-
-
-
+    CropImage(xmin,xmax,ymin,ymax);
 
     // a태그 생성해서 다운로드 받는것
     // const link = document.createElement("a");
     // link.href = image;
     // link.download = "PaintJS!";
     // link.click();
+}
+
+function CropImage(xmin,xmax,ymin,ymax){
+    var crop_canvas = document.getElementById("cropCanvas");
+    crop_canvas.style.visibility = "visible";
+    var width = (xmax+1)-xmin;
+    var height = (ymax+1)-ymin;
+    var crop_ctx = crop_canvas.getContext("2d");
+
+    crop_ctx.drawImage(ctx,
+        xmin, ymin,
+        width, height,
+        0, 0,
+        width, height
+    );
 }
 
 if (canvas) {
