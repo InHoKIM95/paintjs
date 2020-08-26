@@ -175,7 +175,7 @@ function CropImage(xmin,xmax,ymin,ymax){
     crop_canvas.height = crop_height;
 
     console.log("crop_cavas left, top, width, height : ",xmin,ymin,width,height);
-
+    
     crop_ctx.drawImage(canvas,
         xmin, ymin,
         width, height,
@@ -185,9 +185,14 @@ function CropImage(xmin,xmax,ymin,ymax){
 
     var result_canvas = document.getElementById("resultCanvas");
     var result_ctx = result_canvas.getContext("2d");
-
-    result_canvas.width="28";
-    result_canvas.height="28";
+    
+    var result_width = 28;
+    var result_height = 28;
+    
+    result_canvas.width=result_width;
+    result_canvas.height=result_height;
+    result_ctx.fillStyle="white";
+    result_ctx.fillRect(0, 0, result_width, result_height);
 
     result_ctx.drawImage(crop_canvas,
         0,0,
@@ -195,9 +200,9 @@ function CropImage(xmin,xmax,ymin,ymax){
         5,4,
         crop_width,crop_height);
     
-    var result_imgData = result_ctx.getImageData(0,0,28,28);
+    var result_imgData = result_ctx.getImageData(0,0,result_width,result_height);
     var result_data = result_imgData.data;
-    var result_rgbData = createArrayData(28,28,result_data);
+    var result_rgbData = createArrayData(result_width,result_height,result_data);
 
     return result_rgbData;
 }
