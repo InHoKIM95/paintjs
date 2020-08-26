@@ -74,6 +74,7 @@ function handleSaveClick() {
     var ymin = canvas.height-1;
     var ymax = 0;
 
+    var no_image = 1;
     for (var i = 0; i < rgbData.length; i++) {
         for (var j = 0; j < rgbData[i].length; j++) {
             if(rgbData[i][j][0]!=255){
@@ -89,21 +90,17 @@ function handleSaveClick() {
                 if(i > ymax){
                     ymax = i;
                 }
+                no_image = 0;
             }
         }
     }
     console.log("canvas x,y 최소 최대좌표 : ",xmin,xmax,ymin,ymax);
 
-    var crop_rgbData = CropImage(xmin,xmax,ymin,ymax);
-    console.log("crop_rgbData : ",crop_rgbData);
-
-    $.ajax({
-        type:"post",
-        url:"image.php/hi",
-        data:{'data':"yo!"},
-        success:alert("성공")
-    });
-
+    var result_p_tag = document.getElementById("result_p");
+    if(no_image==0){
+        var crop_rgbData = CropImage(xmin,xmax,ymin,ymax);
+        console.log("crop_rgbData : ",crop_rgbData);
+    }
 }
 
 //arrray형태로 rgb값을 x,y 좌표별 만드는 function
@@ -172,6 +169,10 @@ function CropImage(xmin,xmax,ymin,ymax){
     var rgbData = createArrayData(width,height,crop_data);
 
     return rgbData;
+}
+
+function print(){
+    console.log("이거되나?");
 }
 
 if (canvas) {
