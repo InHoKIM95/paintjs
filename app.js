@@ -11,7 +11,7 @@ canvas.height = 700;
 ctx.fillStyle = "white";
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 ctx.strokeStyle = "black";
-ctx.lineWidth = 15;
+ctx.lineWidth = 35;
 
 let painting = false;
 
@@ -98,8 +98,22 @@ function handleSaveClick() {
 
     var result_p_tag = document.getElementById("result_p");
     if(no_image==0){
-        var crop_rgbData = CropImage(xmin,xmax,ymin,ymax);
-        console.log("crop_rgbData : ",crop_rgbData);
+        var result_rgbData = CropImage(xmin,xmax,ymin,ymax);
+        console.log("result_rgbData : ",result_rgbData);
+
+        // var json_data = JSON.stringify(crop_rgbData);
+
+        // $.ajax({
+        //     type : 'post',
+        //     url : 'image.php/hi',
+        //     dataType : 'json',
+        //     data : json_data,
+        //     success:function(){
+        //         alert("success");
+        //     },error:function(){
+        //         alert("error");
+        //     }
+        // });
     }
 }
 
@@ -150,9 +164,15 @@ function createArrayData(width,height,data){
 //rgb data에 따라 이미지를 잘라서 캔버스에 넣는 function
 function CropImage(xmin,xmax,ymin,ymax){
     var crop_canvas = document.getElementById("cropCanvas");
+    var crop_ctx = crop_canvas.getContext("2d");
     var width = (xmax+1)-xmin;
     var height = (ymax+1)-ymin;
-    var crop_ctx = crop_canvas.getContext("2d");
+    
+    var crop_width = 18;
+    var crop_height = 20;
+
+    crop_canvas.width = crop_width;
+    crop_canvas.height = crop_height;
 
     console.log("crop_cavas left, top, width, height : ",xmin,ymin,width,height);
 
@@ -160,19 +180,26 @@ function CropImage(xmin,xmax,ymin,ymax){
         xmin, ymin,
         width, height,
         0, 0,
-        width, height
+        crop_width, crop_height
     );
 
-    var crop_imgData = crop_ctx.getImageData(0, 0, width, height);
-    var crop_data = crop_imgData.data;
+    var result_canvas = document.getElementById("resultCanvas");
+    var result_ctx = result_canvas.getContext("2d");
 
-    var rgbData = createArrayData(width,height,crop_data);
+    result_canvas.width="28";
+    result_canvas.height="28";
 
-    return rgbData;
-}
+    result_ctx.drawImage(crop_canvas,
+        0,0,
+        crop_width,crop_height,
+        5,4,
+        crop_width,crop_height);
+    
+    var result_imgData = result_ctx.getImageData(0,0,28,28);
+    var result_data = result_imgData.data;
+    var result_rgbData = createArrayData(28,28,result_data);
 
-function print(){
-    console.log("이거되나?");
+    return result_rgbData;
 }
 
 if (canvas) {

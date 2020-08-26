@@ -18,7 +18,3 @@ const port = 8090;
 server.listen(port,function(){
     console.log('Ajax server started on port ${port}');
 });
-
-function hi(){
-    return "안녕";
-}
