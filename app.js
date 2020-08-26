@@ -99,21 +99,44 @@ function handleSaveClick() {
     var result_p_tag = document.getElementById("result_p");
     if(no_image==0){
         var result_rgbData = CropImage(xmin,xmax,ymin,ymax);
+        for(var i = 0; i < result_rgbData.length; i++){
+            for(var j = 0; j < result_rgbData[i].length; j++){
+                if(result_rgbData[i][j][0]== 255 && result_rgbData[i][j][1]==255 && result_rgbData[i][j][2]==255){
+                    result_rgbData[i][j][0]=0;
+                }else{
+                    result_rgbData[i][j][0]=255;
+                }
+            }
+        }
+        var input_array = new Array(28*28);
+        for(var i=0;i<28;i++){
+            for(var j=0;j<28;j++){
+                input_array[28*i+j] = result_rgbData[i][j][0];
+            }
+        }
+        console.log(input_array);
+
         console.log("result_rgbData : ",result_rgbData);
-
-        // var json_data = JSON.stringify(crop_rgbData);
-
-        // $.ajax({
-        //     type : 'post',
-        //     url : 'image.php/hi',
-        //     dataType : 'json',
-        //     data : json_data,
-        //     success:function(){
-        //         alert("success");
-        //     },error:function(){
-        //         alert("error");
-        //     }
-        // });
+        $(document).ready(function () {
+            $.ajax({
+                url: 'http://localhost:3000',
+                // dataType: "jsonp",
+                data: `{"data":[${input_array}]}`,
+                type: 'POST',
+                dataType: "JSON",
+                jsonpCallback: 'callback', // this is not relevant to the POST anymore
+                success: function (data) {
+                    var ret = data;
+                    $('#lblResponse').html(ret.msg);
+                    console.log('Success: ')
+                    alert(`${ret.msg}입니다.`);
+                },
+                error: function (xhr, status, error) {
+                    console.log('Error: ' + error.message);
+                    $('#lblResponse').html('Error connecting to the server.');
+                },
+            });
+        });
     }
 }
 
