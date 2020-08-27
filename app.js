@@ -130,32 +130,18 @@ function handleSaveClick() {
                         jsonpCallback: 'callback',
                         success: function (data) {
                             var ret = data;
-                            $('#lblResponse').html(ret.predictNumber);
+                            var predict_number = ret.predictNumber;
                             console.log('Success: ')
                             console.log(`${ret.predictNumber}입니다.`);
+                            $('#resultNumber').html(ret.predictNumber)
                             resolve(ret.predictNumber);
                         },
                         error: function (xhr, status, error) {
                             console.log('Error: ' + error.message);
-                            $('#lblResponse').html('Error connecting to the server.');
                             reject();
                         },
                     });
                 });
-
-                // var json_data = JSON.stringify(crop_rgbData);
-
-                // $.ajax({
-                //     type : 'post',
-                //     url : 'image.php/hi',
-                //     dataType : 'json',
-                //     data : json_data,
-                //     success:function(){
-                //         alert("success");
-                //     },error:function(){
-                //         alert("error");
-                //     }
-                // });
             }
         });
     }

@@ -37,6 +37,10 @@ body{
     font-size: 50px;
 }
 
+.result_number{
+    font-size: 50px;
+}
+
 .canvas{
     width: 700px;
     height: 700px;
