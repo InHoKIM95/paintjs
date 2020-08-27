@@ -133,7 +133,7 @@ function handleSaveClick() {
                             var predict_number = ret.predictNumber;
                             console.log('Success: ')
                             console.log(`${ret.predictNumber}입니다.`);
-                            $('#resultNumber').html(ret.predictNumber)
+                            $('#resultNumber').text('결과는 '+ret.predictNumber+' 입니다.');
                             resolve(ret.predictNumber);
                         },
                         error: function (xhr, status, error) {
