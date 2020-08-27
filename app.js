@@ -62,86 +62,112 @@ function handleCM(event) {
 
 //분석 버튼 클릭시 function
 function handleSaveClick() {
-    var dataURL = canvas.toDataURL();
-    var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    var data = imgData.data;
+    function predict(callback) {
+        return new Promise(function (resolve, reject) {
+            var dataURL = canvas.toDataURL();
+            var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            var data = imgData.data;
 
-    //임시 보관용 배열생성
-    var rgbData = createArrayData(canvas.width,canvas.height,data);
+            //임시 보관용 배열생성
+            var rgbData = createArrayData(canvas.width, canvas.height, data);
 
-    var xmin = canvas.width-1;
-    var xmax = 0;
-    var ymin = canvas.height-1;
-    var ymax = 0;
+            var xmin = canvas.width - 1;
+            var xmax = 0;
+            var ymin = canvas.height - 1;
+            var ymax = 0;
 
-    var no_image = 1;
-    for (var i = 0; i < rgbData.length; i++) {
-        for (var j = 0; j < rgbData[i].length; j++) {
-            if(rgbData[i][j][0]!=255){
-                if(j < xmin){
-                    xmin = j;
-                }
-                if(j > xmax){
-                    xmax = j;
-                }
-                if(i < ymin){
-                    ymin = i;
-                }
-                if(i > ymax){
-                    ymax = i;
-                }
-                no_image = 0;
-            }
-        }
-    }
-    console.log("canvas x,y 최소 최대좌표 : ",xmin,xmax,ymin,ymax);
-
-    var result_p_tag = document.getElementById("result_p");
-    if(no_image==0){
-        var result_rgbData = CropImage(xmin,xmax,ymin,ymax);
-        for(var i = 0; i < result_rgbData.length; i++){
-            for(var j = 0; j < result_rgbData[i].length; j++){
-                if(result_rgbData[i][j][0]== 255 && result_rgbData[i][j][1]==255 && result_rgbData[i][j][2]==255){
-                    result_rgbData[i][j][0]=0;
-                }else{
-                    result_rgbData[i][j][0]=255;
+            var no_image = 1;
+            for (var i = 0; i < rgbData.length; i++) {
+                for (var j = 0; j < rgbData[i].length; j++) {
+                    if (rgbData[i][j][0] != 255) {
+                        if (j < xmin) {
+                            xmin = j;
+                        }
+                        if (j > xmax) {
+                            xmax = j;
+                        }
+                        if (i < ymin) {
+                            ymin = i;
+                        }
+                        if (i > ymax) {
+                            ymax = i;
+                        }
+                        no_image = 0;
+                    }
                 }
             }
-        }
-        var input_array = new Array(28*28);
-        for(var i=0;i<28;i++){
-            for(var j=0;j<28;j++){
-                input_array[28*i+j] = result_rgbData[i][j][0];
-            }
-        }
-        console.log(input_array);
+            console.log("canvas x,y 최소 최대좌표 : ", xmin, xmax, ymin, ymax);
 
-        console.log("result_rgbData : ",result_rgbData);
-        $(document).ready(function () {
-            $.ajax({
-                url: 'http://localhost:3000',
-                // dataType: "jsonp",
-                data: `{"data":[${input_array}]}`,
-                type: 'POST',
-                dataType: "JSON",
-                jsonpCallback: 'callback', // this is not relevant to the POST anymore
-                success: function (data) {
-                    var ret = data;
-                    $('#lblResponse').html(ret.msg);
-                    console.log('Success: ')
-                    alert(`${ret.msg}입니다.`);
-                },
-                error: function (xhr, status, error) {
-                    console.log('Error: ' + error.message);
-                    $('#lblResponse').html('Error connecting to the server.');
-                },
-            });
+            var result_p_tag = document.getElementById("result_p");
+            var input_array = new Array(28 * 28);
+
+            if (no_image == 0) {
+                var result_rgbData = CropImage(xmin, xmax, ymin, ymax);
+                for (var i = 0; i < result_rgbData.length; i++) {
+                    for (var j = 0; j < result_rgbData[i].length; j++) {
+                        if (result_rgbData[i][j][0] == 255 && result_rgbData[i][j][1] == 255 && result_rgbData[i][j][2] == 255) {
+                            input_array[28 * i + j] = 0;
+                        } else {
+                            input_array[28 * i + j] = 1;
+                        }
+                    }
+                }
+
+                // for (var i = 0; i < 28; i++) {
+                //     for (var j = 0; j < 28; j++) {
+                //         input_array[28 * i + j] = parseFloat(result_rgbData[i][j][0])/255.0;
+                //     }
+                // }
+                console.log(input_array);
+
+                console.log("result_rgbData : ", result_rgbData);
+                $(document).ready(function () {
+                    $.ajax({
+                        url: 'http://localhost:3000',
+                        data: `{"data":[${input_array}]}`,
+                        type: 'POST',
+                        dataType: "JSON",
+                        jsonpCallback: 'callback',
+                        success: function (data) {
+                            var ret = data;
+                            $('#lblResponse').html(ret.predictNumber);
+                            console.log('Success: ')
+                            console.log(`${ret.predictNumber}입니다.`);
+                            resolve(ret.predictNumber);
+                        },
+                        error: function (xhr, status, error) {
+                            console.log('Error: ' + error.message);
+                            $('#lblResponse').html('Error connecting to the server.');
+                            reject();
+                        },
+                    });
+                });
+
+                // var json_data = JSON.stringify(crop_rgbData);
+
+                // $.ajax({
+                //     type : 'post',
+                //     url : 'image.php/hi',
+                //     dataType : 'json',
+                //     data : json_data,
+                //     success:function(){
+                //         alert("success");
+                //     },error:function(){
+                //         alert("error");
+                //     }
+                // });
+            }
         });
     }
+    predict().then(function(tableData){
+        console.log(tableData);
+    })
 }
 
+
+
 //arrray형태로 rgb값을 x,y 좌표별 만드는 function
-function createArrayData(width,height,data){
+function createArrayData(width, height, data) {
     var a1 = new Array(width * height);
     var a2 = new Array(4);
 
@@ -149,7 +175,7 @@ function createArrayData(width,height,data){
     var arrcnt = 0;
 
     for (var i = 0; i < data.length; i++) {
-        
+
         if (i % 4 == 0) {
             a2[0] = data[i];
             cnt++;
@@ -185,20 +211,20 @@ function createArrayData(width,height,data){
 }
 
 //rgb data에 따라 이미지를 잘라서 캔버스에 넣는 function
-function CropImage(xmin,xmax,ymin,ymax){
+function CropImage(xmin, xmax, ymin, ymax) {
     var crop_canvas = document.getElementById("cropCanvas");
     var crop_ctx = crop_canvas.getContext("2d");
-    var width = (xmax+1)-xmin;
-    var height = (ymax+1)-ymin;
-    
+    var width = (xmax + 1) - xmin;
+    var height = (ymax + 1) - ymin;
+
     var crop_width = 18;
     var crop_height = 20;
 
     crop_canvas.width = crop_width;
     crop_canvas.height = crop_height;
 
-    console.log("crop_cavas left, top, width, height : ",xmin,ymin,width,height);
-    
+    console.log("crop_cavas left, top, width, height : ", xmin, ymin, width, height);
+
     crop_ctx.drawImage(canvas,
         xmin, ymin,
         width, height,
@@ -208,24 +234,24 @@ function CropImage(xmin,xmax,ymin,ymax){
 
     var result_canvas = document.getElementById("resultCanvas");
     var result_ctx = result_canvas.getContext("2d");
-    
+
     var result_width = 28;
     var result_height = 28;
-    
-    result_canvas.width=result_width;
-    result_canvas.height=result_height;
-    result_ctx.fillStyle="white";
+
+    result_canvas.width = result_width;
+    result_canvas.height = result_height;
+    result_ctx.fillStyle = "white";
     result_ctx.fillRect(0, 0, result_width, result_height);
 
     result_ctx.drawImage(crop_canvas,
-        0,0,
-        crop_width,crop_height,
-        5,4,
-        crop_width,crop_height);
-    
-    var result_imgData = result_ctx.getImageData(0,0,result_width,result_height);
+        0, 0,
+        crop_width, crop_height,
+        5, 4,
+        crop_width, crop_height);
+
+    var result_imgData = result_ctx.getImageData(0, 0, result_width, result_height);
     var result_data = result_imgData.data;
-    var result_rgbData = createArrayData(result_width,result_height,result_data);
+    var result_rgbData = createArrayData(result_width, result_height, result_data);
 
     return result_rgbData;
 }

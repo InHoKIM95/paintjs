@@ -27,6 +27,16 @@ body{
     top: 90px;
 }
 
+.result_info{
+    position: absolute;
+    right: 100px;
+    top:200px;
+}
+
+.text{
+    font-size: 50px;
+}
+
 .canvas{
     width: 700px;
     height: 700px;

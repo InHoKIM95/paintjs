@@ -11,10 +11,10 @@ var fs = require('fs');
 var url = require('url');
 
 const getPixels = require('get-pixels');
+const { setTimeout } = require('timers');
 const src = `./data/test3.png`;
 
 var arr = new Array();
-var predictNumber = -1
 
 
 async function loadModel() {
@@ -24,51 +24,58 @@ async function loadModel() {
 }
 
 function predict(model, callback) {
-    var num = 0;
-    model.then(function (res) {
-        const prediction = res.predict(tf.tensor(arr, [1, 28, 28, 1]));
+    return new Promise(function (resolve, reject) {
+        var predictNumber;
+        model.then(function (res) {
+            const prediction = res.predict(tf.tensor(arr, [1, 28, 28, 1], "float32"));
+            predictNumber = prediction.flatten().argMax().dataSync()[0];
+            
+            console.log("======Image Array======");
+            console.log(arr)
+            console.log("======Predict classes======")
+            prediction.print();
 
-        //prediction.print();
-        //prediction.flatten().argMax().print();
-        num = prediction.flatten().argMax().dataSync()[0];
-        predictNumber = num;
-
-    });
-
-    callback(num);
+        }).then(function (res) {
+            callback();
+            resolve(predictNumber);
+        });
+    })
 
 }
 
 function run(callback) {
     var model = loadModel();
-    predict(model, function (number) {
+    var predictNumber = predict(model, function () {
         callback();
     });
+    return predictNumber;
 }
 
-const server = http.createServer(function (req, res) {
-
+const server = http.createServer(async function (req, res) {
+    var predictNumber = -1; 
     console.log('Request received: ');
 
     let body = [];
 
-    req.on('data', (chunk) => {
+    await req.on('data', (chunk) => {
         body.push(chunk);
     }).on('end', () => {
         body = Buffer.concat(body).toString();
         const input = JSON.parse(body);
         arr = input.data;
-        console.log(arr);
-        run(function () {
-            console.log("Running...");
-
-        });
     });
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    setTimeout(function () {
-        res.end(JSON.stringify({ "msg": `${predictNumber}` })); // removed the 'callback' stuff
-    }, 1000);
+    await run(function () {
+        console.log("Running...");
+    }).then(function(res){
+        console.log("Predict Number "+res);
+        predictNumber = res;
+    });
+
+    await res.setHeader('Content-Type', 'application/json');
+    await res.setHeader('Access-Control-Allow-Origin', '*');
+    await res.end(JSON.stringify({ "predictNumber": `${predictNumber}` })); // removed the 'callback' stuff
+
+    
 
 });
 
