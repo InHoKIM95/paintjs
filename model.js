@@ -12,7 +12,6 @@ var url = require('url');
 
 const getPixels = require('get-pixels');
 const { setTimeout } = require('timers');
-const src = `./data/test3.png`;
 
 var arr = new Array();
 
